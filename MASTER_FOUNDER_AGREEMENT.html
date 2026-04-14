@@ -146,6 +146,38 @@
             animation: pulse 1.5s infinite;
         }
 
+        /* Podcast Button */
+        .header .podcast-btn {
+            position: absolute;
+            left: 30px;
+            color: var(--cyan);
+            text-decoration: none;
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            border: 1px solid var(--border-hl);
+            padding: 6px 12px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition);
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .header .podcast-btn:hover {
+            background: var(--cyan-dim);
+            border-color: var(--cyan);
+            box-shadow: 0 0 15px var(--cyan-glow);
+            color: #fff;
+        }
+
+        .header .podcast-btn::before {
+            content: '▶';
+            font-size: 8px;
+            color: var(--cyan);
+        }
+
         /* System Footer */
         .sys-footer {
             background: rgba(13, 19, 32, 0.9);
@@ -473,7 +505,7 @@
             .sig { width: 100%; }
             
             .header { padding: 15px 20px; flex-direction: column; gap: 15px; }
-            .header .status { position: static; }
+            .header .status, .header .podcast-btn { position: static; }
             .sys-footer { flex-direction: column; gap: 10px; padding: 15px; text-align: center; }
             .sys-footer .stamp { flex-direction: column; gap: 5px; }
             
@@ -500,6 +532,7 @@
                 <span>MASTER_FOUNDER_AGREEMENT</span>
             </div>
             <span class="status">ENCRYPTED_LINK</span>
+            <a href="https://drive.google.com/file/d/1cE1hENcZ7aPLxLad0WChfC0Llsh7rSoT/view?usp=sharing" target="_blank" class="podcast-btn">PODCAST</a>
         </div>
 
         <div class="content narrative">

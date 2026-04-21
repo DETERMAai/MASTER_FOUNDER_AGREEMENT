@@ -1,727 +1,714 @@
-<!DOCTYPE html>
-<html lang="he" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DETERMA.ai — MASTER_FOUNDER_AGREEMENT</title>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans+Hebrew:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            /* Deep Tech Palette */
-            --bg: #010308;
-            --surface: #060a13;
-            --surface-light: #0d1320;
-            --surface-hover: #131b2c;
-            --border: #1a2538;
-            --border-hl: #2a3b59;
-            --text-main: #f0f4f8;
-            --text-sec: #8b9bb4;
-            --text-dim: #3a4b66;
-            --cyan: #00f0ff;
-            --cyan-glow: rgba(0, 240, 255, 0.35);
-            --cyan-dim: rgba(0, 240, 255, 0.08);
-            --green: #00fa9a;
-            --green-glow: rgba(0, 250, 154, 0.2);
-            --red: #ff2a55;
-            --red-glow: rgba(255, 42, 85, 0.3);
-            
-            --mono: 'IBM Plex Mono', monospace;
-            --sans: 'IBM Plex Sans Hebrew', sans-serif;
-            
-            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  Shield, Fingerprint, Lock, Cpu, Terminal, ChevronLeft,
+  Activity, Network, Database, CheckCircle2, AlertTriangle,
+  Zap, Eye, Code2, Users, FileText
+} from 'lucide-react';
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+const glitchKeyframes = `
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+@keyframes flicker {
+  0%, 97%, 100% { opacity: 1; }
+  98% { opacity: 0.85; }
+  99% { opacity: 0.95; }
+}
+@keyframes pulse-ring {
+  0% { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
+}
+@keyframes data-stream {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 0% 100%; }
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes bar-fill {
+  from { width: 0%; }
+  to { width: var(--target-width); }
+}
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 6px rgba(6,182,212,0.3); }
+  50% { box-shadow: 0 0 20px rgba(6,182,212,0.7), 0 0 40px rgba(6,182,212,0.2); }
+}
+@keyframes float-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes success-pop {
+  0% { transform: scale(0.5); opacity: 0; }
+  60% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes hash-reveal {
+  from { opacity: 0; letter-spacing: 0.3em; }
+  to { opacity: 1; letter-spacing: 0.05em; }
+}
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+`;
 
-        body {
-            background: var(--bg);
-            color: var(--text-main);
-            font-family: var(--sans);
-            padding: 50px 20px;
-            display: flex;
-            justify-content: center;
-            line-height: 1.7;
-            overflow-x: hidden;
-        }
+const NAV_ITEMS = [
+  { id: 'intro',      label: 'הצדדים ומטרת ההסכם',     icon: Terminal },
+  { id: 'roles',      label: 'תחומי אחריות',           icon: Cpu },
+  { id: 'equity',     label: 'מבנה ההון (Earn-In)',    icon: Database },
+  { id: 'vesting',    label: 'הבשלה, שימור ומדידה',    icon: Activity },
+  { id: 'ip',         label: 'קניין רוחני (IP)',       icon: Lock },
+  { id: 'governance', label: 'ממשל, החלטות ומשאבים',   icon: Shield },
+  { id: 'dispute',    label: 'מחלוקות ועקרונות ליבה', icon: AlertTriangle },
+];
 
-        /* Animated Deep Tech Background */
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background: 
-                linear-gradient(rgba(1, 3, 8, 0.9), rgba(1, 3, 8, 0.95)),
-                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 240, 255, 0.03) 2px, rgba(0, 240, 255, 0.03) 4px);
-            z-index: -2;
-        }
+function SectionContent({ id }) {
+  const style = { animation: 'slide-in-right 0.35s ease-out both' };
 
-        .ambient-grid {
-            position: fixed;
-            inset: 0;
-            background-image: 
-                linear-gradient(rgba(26, 37, 56, 0.3) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(26, 37, 56, 0.3) 1px, transparent 1px);
-            background-size: 60px 60px;
-            z-index: -1;
-            opacity: 0.5;
-            transform: perspective(500px) rotateX(60deg) translateY(-100px) translateZ(-200px);
-            animation: gridMove 20s linear infinite;
-        }
+  if (id === 'intro') return (
+    <div style={style}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+        {[
+          { tag: 'FOUNDER_01', name: 'עידן', role: 'Co-Founder / CEO / CTO', color: '#22d3ee' },
+          { tag: 'FOUNDER_02', name: 'אלון', role: 'Co-Founder / President / CBO', color: '#60a5fa' },
+        ].map(f => (
+          <div key={f.tag} style={{
+            padding: '16px', borderRadius: '10px',
+            background: 'rgba(15,23,42,0.7)',
+            border: `1px solid ${f.color}22`,
+            position: 'relative', overflow: 'hidden',
+            transition: 'border-color 0.25s, transform 0.25s',
+            cursor: 'default'
+          }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = f.color + '55'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = f.color + '22'; e.currentTarget.style.transform = 'translateY(0)'; }}
+          >
+            <div style={{ position: 'absolute', top: 0, right: 0, width: '60px', height: '60px', background: `radial-gradient(circle at top right, ${f.color}15, transparent)` }} />
+            <div style={{ fontFamily: 'monospace', fontSize: '10px', color: f.color, marginBottom: '6px', letterSpacing: '0.1em' }}>{f.tag}</div>
+            <div style={{ fontSize: '18px', fontWeight: 700, color: '#f8fafc', marginBottom: '4px' }}>{f.name}</div>
+            <div style={{ fontSize: '12px', color: '#94a3b8' }}>{f.role}</div>
+            <div style={{ fontSize: '10px', color: '#475569', marginTop: '8px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '4px' }}>שני הצדדים מוכרים כמייסדים מלאים.</div>
+          </div>
+        ))}
+      </div>
+      
+      <div style={{ padding: '20px', borderRadius: '12px', background: 'rgba(8,51,68,0.2)', border: '1px solid rgba(34,211,238,0.1)' }}>
+        <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#22d3ee', marginBottom: '12px' }}>מטרת ההסכם</h3>
+        <p style={{ color: '#cbd5e1', lineHeight: 1.7, fontSize: '13px' }}>
+          להקים חברה חזקה, הוגנת וברת-השקעה, שבה אחזקות הון וסמכות נגזרות מ:
+        </p>
+        <ul style={{ color: '#94a3b8', fontSize: '13px', lineHeight: 1.8, marginTop: '8px', paddingRight: '20px', listStyleType: 'square' }}>
+          <li>תרומה קיימת</li>
+          <li>אחריות תפעולית</li>
+          <li>ביצוע מדיד</li>
+          <li>מחויבות לאורך זמן</li>
+        </ul>
+      </div>
+    </div>
+  );
 
-        @keyframes gridMove {
-            0% { transform: perspective(500px) rotateX(60deg) translateY(0) translateZ(-200px); }
-            100% { transform: perspective(500px) rotateX(60deg) translateY(60px) translateZ(-200px); }
-        }
-
-        .master-doc {
-            width: 100%;
-            max-width: 880px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            box-shadow: 0 0 50px rgba(0,0,0,0.8), inset 0 0 20px rgba(0, 240, 255, 0.02);
-            position: relative;
-            z-index: 10;
-        }
-
-        /* Top Edge Scan */
-        .top-edge {
-            height: 3px;
-            width: 100%;
-            background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-            animation: scan 3s linear infinite;
-        }
-
-        @keyframes scan {
-            0% { background-position: -800px 0; }
-            100% { background-position: 800px 0; }
-        }
-
-        /* Upgraded Header */
-        .header {
-            background: rgba(13, 19, 32, 0.85);
-            backdrop-filter: blur(10px);
-            padding: 20px 40px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            z-index: 100;
-        }
-        
-        .header .brand { 
-            font-family: var(--mono);
-            color: var(--cyan); 
-            font-weight: 700; 
-            font-size: 18px;
-            letter-spacing: 3px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .header .brand span {
-            font-size: 10px;
-            color: var(--text-sec);
-            letter-spacing: 5px;
-            font-weight: 400;
-        }
-
-        .header .status { 
-            position: absolute;
-            right: 30px;
-            color: var(--green); 
-            font-family: var(--mono);
-            font-size: 10px;
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
-            letter-spacing: 1px;
-        }
-
-        .status::before { 
-            content:''; width:6px; height:6px; background:var(--green); border-radius:50%; 
-            box-shadow: 0 0 10px var(--green);
-            animation: pulse 1.5s infinite;
-        }
-
-        /* Podcast Button */
-        .header .podcast-btn {
-            position: absolute;
-            left: 30px;
-            color: var(--cyan);
-            text-decoration: none;
-            font-family: var(--mono);
-            font-size: 10px;
-            letter-spacing: 1.5px;
-            border: 1px solid var(--border-hl);
-            padding: 6px 12px;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: var(--transition);
-            background: rgba(0, 0, 0, 0.3);
-        }
-
-        .header .podcast-btn:hover {
-            background: var(--cyan-dim);
-            border-color: var(--cyan);
-            box-shadow: 0 0 15px var(--cyan-glow);
-            color: #fff;
-        }
-
-        .header .podcast-btn::before {
-            content: '▶';
-            font-size: 8px;
-            color: var(--cyan);
-        }
-
-        /* System Footer */
-        .sys-footer {
-            background: rgba(13, 19, 32, 0.9);
-            border-top: 1px solid var(--border-hl);
-            padding: 15px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-family: var(--mono);
-            font-size: 10px;
-            color: var(--text-dim);
-            letter-spacing: 1px;
-        }
-
-        .sys-footer .stamp {
-            color: var(--text-sec);
-            display: flex;
-            gap: 15px;
-        }
-
-        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.8); } }
-
-        .content { padding: 50px 70px 40px; }
-
-        /* Animation Classes */
-        .seq-fade-in {
-            opacity: 0;
-            animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .d-1 { animation-delay: 0.1s; }
-        .d-2 { animation-delay: 0.2s; }
-        .d-3 { animation-delay: 0.3s; }
-        .d-4 { animation-delay: 0.4s; }
-        .d-5 { animation-delay: 0.5s; }
-
-        /* Typography & Layout */
-        .salutation {
-            font-family: var(--mono);
-            font-size: 18px;
-            color: var(--text-main);
-            margin-bottom: 30px;
-        }
-        .salutation span { color: var(--cyan); text-shadow: 0 0 10px var(--cyan-glow); }
-
-        .narrative p {
-            color: var(--text-sec);
-            font-size: 16px;
-            margin-bottom: 22px;
-        }
-
-        /* --- PHILOSOPHY HIGHLIGHTS --- */
-        .core-principle {
-            border-right: 4px solid var(--cyan);
-            border-left: 1px solid var(--cyan-dim);
-            background: linear-gradient(90deg, var(--cyan-dim), transparent);
-            padding: 35px 40px;
-            margin: 45px 0;
-            font-size: 20px;
-            font-weight: 600;
-            color: var(--text-main);
-            position: relative;
-            overflow: hidden;
-            box-shadow: inset 0 0 30px rgba(0, 240, 255, 0.05);
-            text-align: center;
-            line-height: 1.5;
-        }
-
-        .core-principle::after {
-            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.15), transparent);
-            animation: sweep 4s infinite;
-        }
-
-        @keyframes sweep { 0% { left: -100%; } 50%, 100% { left: 200%; } }
-
-        .vision-statement {
-            font-size: 20px; 
-            color: var(--cyan); 
-            font-weight: 600; 
-            text-align: center; 
-            margin: 50px 0; 
-            padding: 25px 0;
-            border-top: 1px dashed var(--border-hl);
-            border-bottom: 1px dashed var(--border-hl);
-            text-shadow: 0 0 15px var(--cyan-glow);
-            letter-spacing: 0.5px;
-        }
-
-        /* Gap Section */
-        .gap-section h3 {
-            font-family: var(--mono);
-            font-size: 14px;
-            color: var(--text-main);
-            margin: 50px 0 30px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .gap-section h3::before { content: '[!]'; color: var(--red); text-shadow: 0 0 8px var(--red-glow); }
-
-        .gap-item {
-            margin-bottom: 20px;
-            padding: 20px 25px;
-            background: rgba(255,255,255,0.01);
-            border: 1px solid var(--border);
-            border-right: 3px solid var(--border-hl);
-            transition: var(--transition);
-        }
-
-        .gap-item:hover {
-            background: var(--surface-light);
-            border-right-color: var(--red);
-            transform: translateX(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-        }
-
-        .gap-item strong { 
-            color: var(--red); font-family: var(--mono); font-size: 14px; 
-            display: block; margin-bottom: 10px; letter-spacing: 1px;
-        }
-
-        .gap-item p { margin-bottom: 0; color: var(--text-sec); font-size: 15px; }
-
-        /* Transition Divider */
-        .divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            margin: 70px 0;
-        }
-        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px dashed var(--border-hl); }
-        .divider span {
-            font-family: var(--mono);
-            font-size: 11px;
-            color: var(--cyan);
-            padding: 0 20px;
-            letter-spacing: 3px;
-            text-shadow: 0 0 10px var(--cyan-glow);
-        }
-
-        /* Part 2: Operating Agreement */
-        .framework-part { 
-            background: var(--surface-light); 
-            padding: 50px; 
-            border: 1px solid var(--border); 
-            position: relative;
-        }
-        
-        .punchline-transition {
-            text-align: center; 
-            margin-bottom: 60px; 
-            font-size: 18px; 
-            color: var(--text-main);
-            font-weight: 500;
-            background: linear-gradient(90deg, transparent, var(--cyan-dim), transparent);
-            padding: 20px;
-            border-radius: 4px;
-        }
-
-        .sys-block { margin-bottom: 50px; }
-        .sys-block h4 {
-            font-family: var(--mono);
-            font-size: 13px;
-            color: var(--text-main);
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .sys-block h4::after {
-            content: ''; flex-grow: 1; height: 1px; background: linear-gradient(to left, var(--border), transparent);
-        }
-
-        /* Interactive Table */
-        .table-wrapper { width: 100%; overflow-x: auto; margin: 0 auto; padding-bottom: 5px; }
-        table { width: 100%; min-width: 550px; border-collapse: separate; border-spacing: 0 8px; margin-bottom: 20px; font-family: var(--sans); }
-        th { font-family: var(--mono); font-size: 11px; color: var(--text-dim); text-align: right; padding: 0 15px 10px; }
-        tr td { 
-            background: var(--surface); 
-            padding: 18px 15px; 
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
-            transition: var(--transition);
-            font-size: 14px;
-        }
-        tr td:first-child { border-right: 1px solid var(--border); border-top-right-radius: 4px; border-bottom-right-radius: 4px; font-family: var(--mono); color: var(--text-main); }
-        tr td:last-child { border-left: 1px solid var(--border); border-top-left-radius: 4px; border-bottom-left-radius: 4px; font-family: var(--mono); color: var(--green); font-weight: 600; font-size: 16px; }
-
-        tr:hover td {
-            background: var(--surface-hover);
-            border-color: var(--cyan-glow);
-            box-shadow: inset 0 0 20px var(--cyan-dim);
-            transform: scale(1.01);
-            z-index: 2;
-        }
-
-        /* Hover KPI Grid */
-        .kpi-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 20px; }
-        .kpi-box { 
-            background: var(--surface); 
-            padding: 25px 20px; 
-            border: 1px solid var(--border);
-            border-top: 3px solid var(--text-dim);
-            transition: var(--transition);
-            position: relative;
-        }
-        
-        .kpi-box::before {
-            content: ''; position: absolute; top: -3px; right: 0; width: 0; height: 3px;
-            background: var(--cyan); transition: width 0.4s ease;
-        }
-
-        .kpi-box:hover {
-            transform: translateY(-8px);
-            border-color: var(--border-hl);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.6);
-        }
-
-        .kpi-box:hover::before { width: 100%; }
-        
-        .kpi-box:nth-child(2):hover::before { background: var(--green); }
-        .kpi-box:nth-child(2):hover { border-top-color: var(--green); box-shadow: 0 15px 30px rgba(0, 250, 154, 0.05); }
-
-        .kpi-box h5 { font-family: var(--mono); font-size: 12px; margin-bottom: 15px; color: var(--text-main); letter-spacing: 1px; }
-        .kpi-box ul { list-style: none; padding-right: 5px; }
-        .kpi-box li { font-size: 13px; color: var(--text-sec); margin-bottom: 8px; display: flex; gap: 8px; }
-        .kpi-box li::before { content: '>'; color: var(--cyan); font-family: var(--mono); font-size: 10px; margin-top: 4px; }
-
-        .fw-text { font-size: 15px; color: var(--text-sec); margin-bottom: 15px; }
-        .fw-text strong { color: var(--text-main); }
-        
-        .alert-text { 
-            color: var(--red); font-family: var(--mono); font-size: 13px; 
-            margin-top: 15px; padding: 15px; 
-            background: var(--red-glow); border-right: 2px solid var(--red); 
-        }
-        
-        .distinction-box { 
-            background: var(--surface); padding: 20px; border: 1px solid var(--border);
-            border-right: 2px solid var(--text-dim); margin-top: 20px; font-size: 14px; 
-        }
-        .distinction-box p { margin-bottom: 8px; color: var(--text-sec); }
-        .distinction-box p:last-child { margin-bottom: 0; }
-
-        /* Decision Section Pulsing */
-        .decision-block {
-            margin-top: 70px;
-            padding: 40px;
-            border: 1px solid var(--cyan-glow);
-            background: var(--cyan-dim);
-            text-align: center;
-            animation: breath 4s ease-in-out infinite;
-        }
-
-        @keyframes breath {
-            0%, 100% { box-shadow: 0 0 15px transparent; border-color: rgba(0, 240, 255, 0.2); }
-            50% { box-shadow: 0 0 25px var(--cyan-dim); border-color: rgba(0, 240, 255, 0.6); }
-        }
-
-        .decision-block p { color: var(--text-main); font-size: 17px; margin-bottom: 15px; }
-        
-        /* The Ultimatum Punchline */
-        .ultimatum { 
-            display: block;
-            margin-top: 30px !important; 
-            color: var(--red) !important; 
-            font-weight: 600; 
-            font-size: 20px !important;
-            text-shadow: 0 0 12px var(--red-glow);
-            letter-spacing: 1px;
-        }
-
-        /* Signatures & Final Quote */
-        .closing-quote {
-            text-align: center;
-            color: var(--cyan);
-            font-size: 24px;
-            margin: 70px 0 50px;
-            font-weight: 500;
-            line-height: 1.5;
-            text-shadow: 0 0 20px var(--cyan-glow);
-            letter-spacing: 0.5px;
-        }
-
-        .signatures {
-            display: flex;
-            justify-content: space-between;
-            border-top: 1px dashed var(--border-hl);
-            padding-top: 40px;
-        }
-
-        .sig { width: 45%; position: relative; }
-        
-        /* Signature Draw Animation Hover */
-        .sig-line { 
-            border-bottom: 1px solid var(--border-hl); 
-            margin-bottom: 15px; height: 40px; 
-            position: relative;
-        }
-        .sig-line::after {
-            content: ''; position: absolute; bottom: -1px; right: 0; width: 0; height: 1px;
-            background: var(--cyan); transition: width 0.5s ease;
-        }
-        .sig:hover .sig-line::after { width: 100%; }
-
-        .sig-name { font-family: var(--mono); font-size: 16px; color: var(--text-main); letter-spacing: 2px;}
-        .sig-role { font-family: var(--mono); font-size: 11px; color: var(--text-dim); margin-top: 4px; }
-        .sig-badge { position: absolute; top: 0; left: 0; font-family: var(--mono); font-size: 9px; color: var(--text-dim); border: 1px solid var(--border); padding: 2px 6px; }
-        .sig-pending { color: var(--red); border-color: var(--red-glow); background: rgba(255, 42, 85, 0.05); }
-
-        @media (max-width: 768px) {
-            .content, .framework-part { padding: 30px 20px; }
-            .kpi-grid { grid-template-columns: 1fr; }
-            .signatures { flex-direction: column; gap: 50px; }
-            .sig { width: 100%; }
-            
-            .header { padding: 15px 20px; flex-direction: column; gap: 15px; }
-            .header .status, .header .podcast-btn { position: static; }
-            .sys-footer { flex-direction: column; gap: 10px; padding: 15px; text-align: center; }
-            .sys-footer .stamp { flex-direction: column; gap: 5px; }
-            
-            table { min-width: 100%; }
-            tr td { padding: 12px 10px; font-size: 13px; }
-            tr td:last-child { font-size: 14px; }
-            
-            .core-principle { font-size: 17px; padding: 25px 20px; }
-            .vision-statement { font-size: 17px; }
-            .closing-quote { font-size: 19px; }
-            .decision-block { padding: 25px 15px; margin-top: 40px; }
-        }
-    </style>
-</head>
-<body>
-
-    <div class="ambient-grid"></div>
-
-    <div class="master-doc seq-fade-in">
-        <div class="top-edge"></div>
-        <div class="header">
-            <div class="brand">
-                DETERMA.ai
-                <span>MASTER_FOUNDER_AGREEMENT</span>
+  if (id === 'roles') return (
+    <div style={style}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+        {[
+          { 
+            name: 'עידן – ערוץ טכנולוגי', color: '#22d3ee', 
+            items: ['חזון החברה', 'מוצר', 'טכנולוגיה', 'פיתוח', 'ארכיטקטורה', 'Delivery טכנולוגי'] 
+          },
+          { 
+            name: 'אלון – ערוץ מסחרי', color: '#60a5fa', 
+            items: ['Revenue Engine', 'מכירות', 'Partnerships', 'GTM', 'Growth Execution', 'Fundraising Support'] 
+          },
+        ].map(track => (
+          <div key={track.name} style={{ background: 'rgba(15,23,42,0.5)', padding: '20px', borderRadius: '12px', border: `1px solid ${track.color}15` }}>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: track.color, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Cpu style={{ width: '16px', height: '16px' }} />
+              {track.name}
             </div>
-            <span class="status">ENCRYPTED_LINK</span>
-            <a href="https://drive.google.com/file/d/1cE1hENcZ7aPLxLad0WChfC0Llsh7rSoT/view?usp=sharing" target="_blank" class="podcast-btn">PODCAST</a>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {track.items.map(item => (
+                <div key={item} style={{
+                  padding: '8px 12px', borderRadius: '6px',
+                  background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)',
+                  color: '#cbd5e1', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = `${track.color}10`; e.currentTarget.style.borderColor = track.color + '40'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'; }}
+                >
+                  <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: track.color }} />
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  if (id === 'equity') return (
+    <div style={style}>
+      
+      {/* Bars Overview */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+        {[
+          {
+            title: 'Technical Track (עידן)', total: '60%', color: 'cyan', base: '20%', baseDesc: 'IP, בנייה, השקעה מוקדמת',
+            bars: [
+              { label: 'BASE', pct: 33, value: '20%', delay: 0 },
+              { label: 'T1 (3m)', pct: 25, value: '+15%', delay: 150 },
+              { label: 'T2 (6m)', pct: 25, value: '+15%', delay: 300 },
+              { label: 'T3 (12m)', pct: 17, value: '+10%', delay: 450 },
+            ]
+          },
+          {
+            title: 'Commercial Track (אלון)', total: '40%', color: 'blue', base: '10%', baseDesc: '4y Vesting, 12m Cliff',
+            bars: [
+              { label: 'BASE', pct: 25, value: '10%', delay: 0 },
+              { label: 'C1 (6m)', pct: 25, value: '+10%', delay: 150 },
+              { label: 'C2 (12m)', pct: 25, value: '+10%', delay: 300 },
+              { label: 'C3 (18m)', pct: 25, value: '+10%', delay: 450 },
+            ]
+          }
+        ].map(track => {
+          const accent = track.color === 'cyan' ? '#22d3ee' : '#60a5fa';
+          return (
+            <div key={track.title} style={{
+              padding: '20px', borderRadius: '12px', background: 'rgba(15,23,42,0.6)',
+              border: `1px solid ${accent}22`, position: 'relative', overflow: 'hidden'
+            }}>
+              <div style={{ position: 'absolute', top: 0, left: 0, width: '3px', height: '100%', background: accent }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px', paddingRight: '8px' }}>
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: '#f1f5f9' }}>{track.title}</div>
+                  <div style={{ fontSize: '11px', color: accent, fontFamily: 'monospace', marginTop: '4px' }}>BASE: {track.base} ({track.baseDesc})</div>
+                </div>
+                <div style={{ fontFamily: 'monospace', fontSize: '28px', fontWeight: 300, color: accent, lineHeight: 1 }}>{track.total}</div>
+              </div>
+              {track.bars.map((b, i) => {
+                const [filled, setFilled] = useState(false);
+                useEffect(() => { const t = setTimeout(() => setFilled(true), b.delay + 200); return () => clearTimeout(t); }, []);
+                return (
+                  <div key={b.label} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                    <div style={{ width: '58px', fontFamily: 'monospace', fontSize: '10px', color: i === 0 ? '#64748b' : accent, letterSpacing: '0.05em' }}>{b.label}</div>
+                    <div style={{ flex: 1, height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', overflow: 'hidden' }}>
+                      <div style={{
+                        height: '100%', width: filled ? `${b.pct}%` : '0%',
+                        background: i === 0 ? '#475569' : `linear-gradient(90deg, ${accent}88, ${accent})`,
+                        transition: `width 1s cubic-bezier(0.16,1,0.3,1) ${b.delay}ms`,
+                      }} />
+                    </div>
+                    <div style={{ width: '36px', textAlign: 'right', fontFamily: 'monospace', fontSize: '11px', color: i === 0 ? '#94a3b8' : accent, fontWeight: 600 }}>{b.value}</div>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Detailed Milestones (The "No Missing Data" requirement) */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+        
+        {/* Idan Milestones */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {[
+            { tag: 'T1', time: 'עד 3 חודשים', val: '+15%', items: ['MVP עובד להצגה חיצונית', 'סביבת Demo חיה', 'מערכת deployable בסביבת בדיקה'] },
+            { tag: 'T2', time: 'עד 6 חודשים', val: '+15%', items: ['סביבת Pilot מוכנה ללקוח', 'אינטגרציה ראשונה פעילה', 'לקוח ראשון מוכן לעלייה'] },
+            { tag: 'T3', time: 'עד 12 חודשים', val: '+10%', items: ['מערכת onboarding מלאה', 'monitoring פעיל', 'מוכנות סקייל ראשוני'] },
+          ].map(tr => (
+            <div key={tr.tag} style={{ background: 'rgba(8,51,68,0.2)', border: '1px solid rgba(34,211,238,0.1)', borderRadius: '8px', padding: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', borderBottom: '1px solid rgba(34,211,238,0.1)', paddingBottom: '8px' }}>
+                <span style={{ fontSize: '12px', fontWeight: 600, color: '#22d3ee', fontFamily: 'monospace' }}>{tr.tag} {tr.val} <span style={{ color: '#64748b', fontWeight: 400 }}>({tr.time})</span></span>
+                <span style={{ fontSize: '10px', color: '#94a3b8' }}>השלמת <span style={{color:'#f8fafc'}}>אחד</span> מהבאים:</span>
+              </div>
+              <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {tr.items.map((item, idx) => (
+                  <li key={idx} style={{ fontSize: '11px', color: '#cbd5e1', display: 'flex', gap: '6px', alignItems: 'flex-start' }}>
+                    <span style={{ color: '#22d3ee', marginTop: '-1px' }}>▸</span> {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
 
-        <div class="content narrative">
-
-            <!-- PART 1: THE NARRATIVE -->
-            <div class="letter-part seq-fade-in d-1">
-                <div class="salutation"><span>></span> אלון,</div>
-                
-                <p>לפני שנמשיך, אני רוצה לעצור על משהו בסיסי.</p>
-                <p>DETERMA נבנתה על עיקרון אחד:</p>
-
-                <div class="core-principle">
-                    "אין הרשאה בלי ולידציה.<br>אין שליטה בלי הוכחה.<br>ואין מבנה שלא נבנה מתוך מציאות."
-                </div>
-
-                <p>זו לא רק ארכיטקטורה טכנולוגית — זו תפיסת עולם.<br>
-                והמשמעות שלה פשוטה:</p>
-                
-                <div class="vision-statement">
-                    « הדרך שבה אנחנו בונים את החברה חייבת להיות עקבית עם מה שהמערכת עצמה מייצגת. »
-                </div>
-                
-                <p>אחרת — זה לא יחזיק. לא מול שוק, לא מול משקיעים, ולא לאורך זמן.</p>
+        {/* Alon Milestones */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {[
+            { tag: 'C1', time: 'עד 6 חודשים', val: '+10%', items: ['2 לקוחות משלמים', '$50K הכנסות חתומות ומתקבלות', 'לקוח Enterprise ראשון בתשלום'] },
+            { tag: 'C2', time: 'עד 12 חודשים', val: '+10%', items: ['$150K הכנסות מצטברות', '4 לקוחות משלמים', 'לקוח Enterprise חו"ל עם חוזה $100K+'] },
+            { tag: 'C3', time: 'עד 18 חודשים', val: '+10%', items: ['ARR של $500K+', '7 לקוחות משלמים', 'MRR של $40K+ ב-3 חודשים רצופים'] },
+          ].map(tr => (
+            <div key={tr.tag} style={{ background: 'rgba(29,78,216,0.1)', border: '1px solid rgba(96,165,250,0.1)', borderRadius: '8px', padding: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', borderBottom: '1px solid rgba(96,165,250,0.1)', paddingBottom: '8px' }}>
+                <span style={{ fontSize: '12px', fontWeight: 600, color: '#60a5fa', fontFamily: 'monospace' }}>{tr.tag} {tr.val} <span style={{ color: '#64748b', fontWeight: 400 }}>({tr.time})</span></span>
+                <span style={{ fontSize: '10px', color: '#94a3b8' }}>השלמת <span style={{color:'#f8fafc'}}>אחד</span> מהבאים:</span>
+              </div>
+              <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {tr.items.map((item, idx) => (
+                  <li key={idx} style={{ fontSize: '11px', color: '#cbd5e1', display: 'flex', gap: '6px', alignItems: 'flex-start' }}>
+                    <span style={{ color: '#60a5fa', marginTop: '-1px' }}>▸</span> {item}
+                  </li>
+                ))}
+              </ul>
             </div>
-
-            <div class="gap-section seq-fade-in d-2">
-                <h3>הפער שראיתי בהסכם</h3>
-                <p>ההסכם ששלחת אינו תואם את האופן שבו אני בונה את המערכת.</p>
-                <p>הוא מגדיר מבנה לפני שנבדקה מציאות, נותן הרשאות לפני שהוכח ביצוע, ומניח תוצאה — שותפות של 40% — לפני שיש בסיס שמצדיק אותה בפועל.</p>
-                <p>זה לא עניין של ניסוח — אלא של התאמה בין ערך לבין מבנה. יש ארבע נקודות מרכזיות שלא מתיישבות עם זה:</p>
-
-                <div style="margin-top: 40px;">
-                    <div class="gap-item">
-                        <strong>IP // קניין רוחני</strong>
-                        <p>הנכס המרכזי נכנס למבנה שעדיין לא הוכיח את עצמו, ובתרחישים מסוימים אף מתחלק לפי אחזקות גם במקרה של כישלון. שליטה לא מועברת לפני שיש ולידציה — זה עיקרון שאני עובד לפיו.</p>
-                    </div>
-                    <div class="gap-item">
-                        <strong>VALUE_CHAIN // סעיף "שרשרת הערך"</strong>
-                        <p>ייחוס מראש של ערך עסקי לפי חיבורים יוצר מנגנון שאינו מדיד ואינו ניתן לאימות. בפועל, תוצאות נוצרות משילוב של מוצר, ביצוע, תזמון וצורך — לא ניתן לשייך אותן מראש לגורם אחד.</p>
-                    </div>
-                    <div class="gap-item">
-                        <strong>ACCELERATION // מנגנוני האצה</strong>
-                        <p>האצה של אחוזים על בסיס פיילוטים, גיוס או משקיע אינה משקפת ביצוע יוצא דופן, אלא פעילות שוטפת. זה מנתק את הקשר בין אחוזים לבין ביצוע לאורך זמן.</p>
-                    </div>
-                    <div class="gap-item">
-                        <strong>DILUTION_PROTECT // Full Ratchet</strong>
-                        <p>הגנת דילול מסוג זה בשלב הנוכחי אינה תואמת מבנה שניתן לגייס עליו הון. היא אינה מגנה על החברה — אלא מקשה עליה להתפתח.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="gap-section seq-fade-in d-3">
-                <h3>על ערך ופוטנציאל</h3>
-                <p>אני כן רואה בך ערך אמיתי — רשת, הבנת שוק ויכולת לייצר חיבורים.</p>
-                <p>אבל יש הבדל בין ערך פוטנציאלי לבין ערך מוכח בפועל.</p>
-                <p>והמערכת שאני בונה לא מבוססת על פוטנציאל — אלא על תוצאה.</p>
-            </div>
-
-            <!-- THE TRANSITION -->
-            <div class="divider seq-fade-in d-3">
-                <span>SYSTEM_FRAMEWORK_ACTIVATED</span>
-            </div>
-
-            <!-- PART 2: THE OPERATING AGREEMENT -->
-            <div class="framework-part seq-fade-in d-4">
-                
-                <div class="punchline-transition">
-                    המבנה שאני מציע לא נועד להקטין —<br>אלא לאפשר להגיע לאותו יעד, דרך ביצוע בפועל ולא דרך הנחה מראש.
-                </div>
-
-                <div class="sys-block">
-                    <h4>01 // ROLE_DEFINITION — CBO</h4>
-                    <p class="fw-text">ה-CBO אחראי על בניית והוכחת מנוע ההכנסות של החברה.<br>הצלחה בתפקיד תימדד על פי יצירת תוצאות עסקיות בפועל.</p>
-                </div>
-
-                <div class="sys-block">
-                    <h4>02 // EQUITY_ALLOCATION (EARN-IN)</h4>
-                    <div class="table-wrapper">
-                        <table>
-                            <tr><th>מזהה שלב</th><th>יעד עסקי / אבן דרך</th><th>הקצאה</th></tr>
-                            <tr><td>BASE_EQUITY</td><td>הצטרפות + Vesting (4 שנים, Cliff שנה)</td><td>15%</td></tr>
-                            <tr><td>TRANCHE_ALPHA</td><td>3 Design Partners בתשלום (≥ $25K, חוזה חתום)</td><td>10%</td></tr>
-                            <tr><td>TRANCHE_BETA</td><td>הבאת Lead Investor + חתימה על Term Sheet לסבב ≥ $2M</td><td>10%</td></tr>
-                            <tr><td>TRANCHE_GAMMA</td><td>ARR ≥ $500K</td><td>5%</td></tr>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="sys-block">
-                    <h4>03 // KPI_EXECUTION_LAYER</h4>
-                    <div class="kpi-grid">
-                        <div class="kpi-box">
-                            <h5>ALPHA KPI</h5>
-                            <ul>
-                                <li>מינימום 10 הזדמנויות Qualified</li>
-                                <li>3 סגירות בפועל</li>
-                                <li>מחזור מכירה ≤ 90 יום</li>
-                            </ul>
-                        </div>
-                        <div class="kpi-box">
-                            <h5>BETA KPI</h5>
-                            <ul>
-                                <li>מינימום 5 פגישות עם משקיעים Tier-1</li>
-                                <li>לפחות 2 תהליכים מתקדמים (DD / Partner)</li>
-                                <li>הבאת Lead Investor וחתימה על TS</li>
-                            </ul>
-                        </div>
-                        <div class="kpi-box">
-                            <h5>GAMMA KPI</h5>
-                            <ul>
-                                <li>ARR ≥ $500K</li>
-                                <li>לפחות 5 לקוחות משלמים</li>
-                                <li>Churn נמוך</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="sys-block">
-                    <h4>04 // RESOURCE RESPONSIBILITY</h4>
-                    <p class="fw-text">כל משאב הנדרש לביצוע תפקיד ה-CBO ייחשב כחלק מיכולתו האופרטיבית.<br>כולל: אנשי מכירות, יועצים, שותפים, מתווכים.</p>
-                    <div class="distinction-box">
-                        <p style="font-family: var(--mono); color: var(--text-main); margin-bottom: 10px;">> הבחנה אופרטיבית:</p>
-                        <p>- משאב תומך → <strong>באחריות ה-CBO</strong></p>
-                        <p>- פונקציה עצמאית חדשה → <strong>החלטה משותפת והקצאה נפרדת</strong></p>
-                    </div>
-                </div>
-
-                <div class="sys-block">
-                    <h4>05 // IP_OWNERSHIP & GOVERNANCE</h4>
-                    <p class="fw-text">ה-IP (קוד, אלגוריתמיקה, ארכיטקטורה):<br>- בבעלות עידן<br>- ברישיון בלעדי לחברה</p>
-                    <div class="alert-text">
-                        <strong>[!] תניית השבה (Reversion Clause):</strong><br>
-                        במקרה של פירוק, סיום פעילות או סיום התקשרות מהותי:<br>ה-IP חוזר לבעלות מלאה של עידן.
-                    </div>
-                    <br>
-                    <p class="fw-text"><strong>Governance:</strong><br>מבנה קבלת החלטות מפורט יוגדר בהסכם המלא, לרבות החלטות מהותיות כגון גיוס הון, שינוי מבנה והכנסת שותפים.</p>
-                </div>
-
-                <div class="sys-block">
-                    <h4>06 // PROTECTIONS</h4>
-                    <p class="fw-text">- Anti-Dilution: <strong>Broad-Based Weighted Average</strong></p>
-                    <p class="fw-text">- Reverse Vesting: <strong>Buyback על מניות לא מובשלות במחיר Nominal</strong></p>
-                </div>
-
-                <!-- DECISION ULTIMATUM -->
-                <div class="seq-fade-in d-5">
-                    <div class="decision-block">
-                        <p><strong>סיכום</strong></p>
-                        <p>יש כאן פער אמיתי באופן שבו אנחנו מחברים בין מבנה לבין מציאות.</p>
-                        <p>אם אנחנו מצליחים ליישר קו על העקרונות האלה —<br>יש בסיס אמיתי לבנות משהו נכון.</p>
-                        <span class="ultimatum">> אם לא — עדיף להבין את זה עכשיו בצורה נקייה.</span>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- CLOSING -->
-            <div class="closing-quote seq-fade-in d-5">
-                « מבנה שלא נבנה מתוך אמת — לא מחזיק לאורך זמן.<br>ואני לא בונה משהו זמני. »
-            </div>
-
-            <div class="signatures seq-fade-in d-5">
-                <div class="sig">
-                    <div class="sig-badge">AUTH_SECURED</div>
-                    <div class="sig-line"></div>
-                    <div class="sig-name">עידן</div>
-                    <div class="sig-role">CO-FOUNDER & CTO // DETERMA.ai</div>
-                </div>
-                <div class="sig">
-                    <div class="sig-badge sig-pending">AWAITING_INPUT</div>
-                    <div class="sig-line"></div>
-                    <div class="sig-name">אלון</div>
-                    <div class="sig-role">CBO (PENDING EXECUTION)</div>
-                </div>
-            </div>
-
+          ))}
         </div>
 
-        <!-- System Footer -->
-        <div class="sys-footer seq-fade-in d-5">
-            <div>DOC_ID: FNDR-AGR-001</div>
-            <div class="stamp">
-                <span>DATE: 14.04.2026</span>
-                <span>SYS_TIME: 01:17 AM EEST</span>
+      </div>
+    </div>
+  );
+
+  if (id === 'vesting') return (
+    <div style={style}>
+      
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+        <div style={{ padding: '20px', borderRadius: '10px', background: 'rgba(15,23,42,0.7)', border: '1px solid rgba(96,165,250,0.2)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+            <Activity style={{ width: '16px', height: '16px', color: '#60a5fa' }} />
+            <span style={{ fontSize: '14px', fontWeight: 700, color: '#e2e8f0' }}>הבשלה מסחרית (אלון)</span>
+          </div>
+          <p style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '16px' }}>כל Tranche Earn-In מסחרי יוקצה כך:</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ background: 'rgba(96,165,250,0.05)', padding: '12px', borderRadius: '6px', borderLeft: '2px solid #60a5fa' }}>
+              <div style={{ fontSize: '13px', color: '#f8fafc', display: 'flex', justifyContent: 'space-between' }}>
+                <span>Vested מיידית בהשגת היעד</span>
+                <span style={{ fontFamily: 'monospace', color: '#60a5fa', fontWeight: 'bold' }}>50%</span>
+              </div>
             </div>
+            <div style={{ background: 'rgba(96,165,250,0.05)', padding: '12px', borderRadius: '6px', borderLeft: '2px solid #3b82f6' }}>
+              <div style={{ fontSize: '13px', color: '#f8fafc', display: 'flex', justifyContent: 'space-between' }}>
+                <span>הבשלה לאורך 12 חודשי פעילות רצופה</span>
+                <span style={{ fontFamily: 'monospace', color: '#3b82f6', fontWeight: 'bold' }}>50%</span>
+              </div>
+            </div>
+          </div>
+          <div style={{ marginTop: '16px', fontSize: '11px', color: '#f87171', display: 'flex', gap: '6px' }}>
+            <AlertTriangle style={{ width: '12px', height: '12px' }} />
+            אם הפעילות נפסקת לפני תום התקופה – החלק הלא מובשל חוזר לחברה.
+          </div>
         </div>
+
+        <div style={{ padding: '20px', borderRadius: '10px', background: 'rgba(15,23,42,0.7)', border: '1px solid rgba(34,211,238,0.2)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+            <Cpu style={{ width: '16px', height: '16px', color: '#22d3ee' }} />
+            <span style={{ fontSize: '14px', fontWeight: 700, color: '#e2e8f0' }}>הבשלה טכנולוגית (עידן)</span>
+          </div>
+          <p style={{ fontSize: '13px', color: '#94a3b8', lineHeight: 1.7 }}>
+            הצדדים מכירים בכך שמימון עתידי מוסדי עשוי לדרוש <strong style={{ color: '#22d3ee' }}>Reverse Vesting</strong> סביר.
+          </p>
+          <div style={{ marginTop: '16px', padding: '12px', background: 'rgba(34,211,238,0.05)', borderRadius: '6px', border: '1px solid rgba(34,211,238,0.1)', fontSize: '12px', color: '#cbd5e1', lineHeight: 1.6 }}>
+            בכפוף להכרה מלאה בתקופת השירות והבנייה שכבר בוצעה.
+          </div>
+        </div>
+      </div>
+
+      <div style={{ padding: '20px', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+        <div style={{ fontSize: '14px', fontWeight: 700, color: '#e2e8f0', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Database style={{ width: '16px', height: '16px', color: '#a78bfa' }} />
+          מדידת Milestones (אובייקטיבית בלבד)
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+          {['חוזים חתומים', 'כספים שהתקבלו בפועל', 'חשבוניות / הזמנות', 'מערכות CRM / Accounting', 'אישור שני הצדדים בתום לב'].map(item => (
+            <div key={item} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#cbd5e1' }}>
+              <CheckCircle2 style={{ width: '14px', height: '14px', color: '#10b981' }} /> {item}
+            </div>
+          ))}
+        </div>
+        <div style={{ padding: '12px', background: 'rgba(244,63,94,0.1)', borderLeft: '2px solid #f43f5e', fontSize: '12px', color: '#fda4af', lineHeight: 1.6 }}>
+          <strong>לא ייחשבו כהישג מזכה (אלא אם הוסכם בכתב):</strong> פגישות, כוונות, LOIs לא מחייבים או שיחות היכרות.
+        </div>
+      </div>
 
     </div>
+  );
 
-</body>
-</html>
+  if (id === 'ip') return (
+    <div style={style}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        
+        <div style={{ padding: '20px', borderRadius: '12px', background: 'rgba(8,51,68,0.3)', border: '1px solid rgba(34,211,238,0.2)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+            <div style={{ padding: '8px', background: 'rgba(34,211,238,0.1)', borderRadius: '8px' }}>
+              <Lock style={{ width: '20px', height: '20px', color: '#22d3ee' }} />
+            </div>
+            <div style={{ fontSize: '16px', fontWeight: 700, color: '#f8fafc' }}>בעלות ורישיון</div>
+          </div>
+          <p style={{ fontSize: '14px', color: '#cbd5e1', lineHeight: 1.7 }}>
+            כל ה-IP, הקוד, הארכיטקטורה, השיטות והנכסים שנוצרו טרם ההקמה <strong>שייכים לעידן בלבד</strong>. לחברה מוענק רישיון שימוש בלעדי לצורך פעילותה.
+          </p>
+        </div>
+
+        <div style={{ padding: '20px', borderRadius: '12px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(255,255,255,0.05)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+            <div style={{ padding: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
+              <Network style={{ width: '20px', height: '20px', color: '#94a3b8' }} />
+            </div>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: '#e2e8f0' }}>תנאים להעברת בעלות מלאה לחברה</div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+            {['סבב השקעה מהותי', 'ARR מהותי', 'רכישה אסטרטגית', 'החלטה משותפת'].map((trigger, i) => (
+              <div key={i} style={{ padding: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '6px', fontSize: '13px', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Zap style={{ width: '12px', height: '12px', color: '#22d3ee' }} />
+                {trigger}
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+
+  if (id === 'governance') return (
+    <div style={style}>
+      
+      {/* Autonomy & Joint Decisions */}
+      <div style={{ display: 'flex', gap: '20px', marginBottom: '24px' }}>
+        <div style={{ flex: 1, padding: '20px', background: 'rgba(15,23,42,0.6)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+          <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#f8fafc', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}><Shield style={{ width:'16px', height:'16px', color: '#10b981' }}/> שוויון ניהולי</h3>
+          <p style={{ fontSize: '13px', color: '#94a3b8', lineHeight: 1.6 }}>
+            לשני הצדדים מעמד Founder מלא. לכל צד <strong>אוטונומיה בתחום אחריותו</strong> במסגרת תקציב ומדיניות מוסכמים.
+          </p>
+        </div>
+        <div style={{ flex: 1, padding: '20px', background: 'rgba(15,23,42,0.6)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+          <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#f8fafc', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}><Users style={{ width:'16px', height:'16px', color: '#a78bfa' }}/> החלטות משותפות</h3>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            {['גיוס הון', 'הקצאת מניות', 'הכנסת שותף', 'מכירת חברה', 'שכר מייסדים', 'חוב מהותי', 'העברת IP'].map(item => (
+              <span key={item} style={{ padding: '4px 8px', background: 'rgba(167,139,250,0.1)', color: '#c4b5fd', borderRadius: '4px', fontSize: '11px' }}>{item}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Resources Protocol */}
+      <div style={{ padding: '20px', background: 'rgba(8,51,68,0.2)', borderRadius: '12px', border: '1px solid rgba(34,211,238,0.15)', marginBottom: '24px' }}>
+        <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#22d3ee', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}><Database style={{ width:'16px', height:'16px' }}/> פרוטוקול משאבים (הגנת דילול)</h3>
+        <p style={{ fontSize: '13px', color: '#cbd5e1', lineHeight: 1.6, marginBottom: '12px' }}>כל צד אחראי למשאבים הסבירים הנדרשים לביצוע תחומו.</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', borderLeft: '2px solid #60a5fa', fontSize: '12px', color: '#94a3b8', lineHeight: 1.5 }}>
+            <strong style={{ color: '#60a5fa' }}>משאב מסחרי עזר:</strong> אם יידרש גורם חיצוני מהותי לביצוע פעילות מסחרית, העלות/הדילול יקוזזו תחילה ממסלול ההון המסחרי הלא מוקנה (אלא אם הוסכם אחרת).
+          </div>
+          <div style={{ padding: '10px', background: 'rgba(255,255,255,0.03)', borderLeft: '2px solid #22d3ee', fontSize: '12px', color: '#94a3b8', lineHeight: 1.5 }}>
+            <strong style={{ color: '#22d3ee' }}>משאב טכנולוגי עזר:</strong> אם יידרש גורם חיצוני טכנולוגי – יחול עיקרון זהה על המסלול הטכנולוגי.
+          </div>
+        </div>
+      </div>
+
+      {/* 6m Review */}
+      <div style={{ padding: '16px', background: 'rgba(15,23,42,0.4)', borderRadius: '8px', border: '1px dashed rgba(255,255,255,0.1)' }}>
+        <h3 style={{ fontSize: '13px', fontWeight: 600, color: '#f1f5f9', marginBottom: '8px' }}>Founder Review – לאחר 6 חודשים</h3>
+        <div style={{ fontSize: '12px', color: '#94a3b8', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          <span>✓ ביצועים</span><span>✓ מחויבות</span><span>✓ התאמה</span><span>✓ תקשורת</span><span>✓ תוצאות בפועל</span>
+        </div>
+        <div style={{ marginTop: '8px', fontSize: '11px', color: '#64748b' }}>ובהסכמה ניתן יהיה לעדכן תפקידים, יעדים או מבנה עתידי.</div>
+      </div>
+
+    </div>
+  );
+
+  if (id === 'dispute') return (
+    <div style={style}>
+      
+      {/* Dispute */}
+      <div style={{ padding: '20px', borderRadius: '12px', background: 'rgba(120,53,15,0.15)', border: '1px solid rgba(251,191,36,0.2)', marginBottom: '24px' }}>
+        <div style={{ fontSize: '13px', fontWeight: 700, color: '#fbbf24', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <AlertTriangle style={{ width: '16px', height: '16px' }} />
+          מחלוקות ו-Buyout (לאחר 30 יום)
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+          {['פגישת פתרון ייעודית', 'Advisor / Mediator מוסכם', 'Buyout לפי מעריך שווי בלתי תלוי'].map((step, i) => (
+            <div key={step} style={{ padding: '12px', background: 'rgba(251,191,36,0.05)', borderRadius: '8px', border: '1px solid rgba(251,191,36,0.1)' }}>
+              <div style={{ fontSize: '10px', fontFamily: 'monospace', color: '#f59e0b', marginBottom: '4px' }}>STEP 0{i+1}</div>
+              <div style={{ fontSize: '12px', color: '#e2e8f0', lineHeight: 1.5 }}>{step}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ marginTop: '12px', fontSize: '11px', color: '#d97706' }}>* התשלום יתבצע במזומן או בפריסה מוסכמת.</div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+        
+        {/* Obligations */}
+        <div style={{ padding: '20px', borderRadius: '12px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(255,255,255,0.05)' }}>
+          <h3 style={{ fontSize: '13px', fontWeight: 600, color: '#f8fafc', marginBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '8px' }}>מחויבות וסודיות</h3>
+          <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px', color: '#cbd5e1' }}>
+            <li style={{display:'flex', gap:'8px'}}><Lock style={{width:'14px', height:'14px', color:'#64748b'}}/> סודיות מלאה ושמירה על נכסים</li>
+            <li style={{display:'flex', gap:'8px'}}><Users style={{width:'14px', height:'14px', color:'#64748b'}}/> אי שידול עובדים/לקוחות (תקופה סבירה)</li>
+            <li style={{display:'flex', gap:'8px'}}><CheckCircle2 style={{width:'14px', height:'14px', color:'#64748b'}}/> פעולה בתום לב</li>
+          </ul>
+        </div>
+
+        {/* Core Principles */}
+        <div style={{ padding: '20px', borderRadius: '12px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(255,255,255,0.05)' }}>
+          <h3 style={{ fontSize: '13px', fontWeight: 600, color: '#f8fafc', marginBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '8px' }}>עקרונות ליבה</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {['אמת לפני אגו', 'ביצוע לפני דיבורים', 'תרומה לפני תואר', 'בנייה לפני פוליטיקה', 'טווח ארוך לפני רגש רגעי'].map((p, i) => (
+              <div key={p} style={{ fontSize: '12px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ color: '#22d3ee', fontFamily: 'monospace', fontSize: '10px' }}>0{i+1}</span> {p}
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
+
+      {/* Summary */}
+      <div style={{ marginTop: '20px', padding: '16px', background: 'rgba(8,51,68,0.2)', borderRadius: '8px', borderLeft: '3px solid #22d3ee' }}>
+        <p style={{ fontSize: '13px', color: '#cbd5e1', lineHeight: 1.6, margin: 0 }}>
+          <strong>סיכום:</strong> אלון מקבל מעמד Founder מלא ומסלול אמיתי ל-40% דרך מכירות והצלחה מוכחת. עידן מקבל הכרה מלאה על מה שכבר נבנה, שמירה על ה-IP, ומסלול טבעי ל-60%. <br/>
+          <span style={{ color: '#94a3b8' }}>זהו מבנה שמכבד את שני הצדדים ומבוסס מציאות.</span>
+        </p>
+      </div>
+
+    </div>
+  );
+
+  return null;
+}
+
+export default function AgreementViewer() {
+  const [activeSection, setActiveSection] = useState('intro');
+  const [signState, setSignState] = useState('idle'); // idle | scanning | done
+  const [scanProgress, setScanProgress] = useState(0);
+
+  const handleSign = () => {
+    if (signState !== 'idle') return;
+    setSignState('scanning');
+    let p = 0;
+    const interval = setInterval(() => {
+      p += Math.random() * 8 + 4;
+      setScanProgress(Math.min(p, 100));
+      if (p >= 100) { clearInterval(interval); setTimeout(() => setSignState('done'), 300); }
+    }, 60);
+  };
+
+  return (
+    <>
+      <style>{glitchKeyframes}</style>
+      <div style={{
+        minHeight: '100vh', background: '#030712', color: '#cbd5e1',
+        fontFamily: "'Segoe UI', system-ui, sans-serif",
+        overflowX: 'hidden', direction: 'rtl',
+        animation: 'flicker 8s infinite'
+      }}>
+
+        {/* Scanline & Bg */}
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 100, pointerEvents: 'none',
+          background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px)'
+        }} />
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, height: '2px', zIndex: 99, pointerEvents: 'none',
+          background: 'linear-gradient(90deg, transparent, rgba(6,182,212,0.4), transparent)',
+          animation: 'scanline 6s linear infinite'
+        }} />
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
+          backgroundImage: 'linear-gradient(rgba(6,182,212,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(6,182,212,0.025) 1px, transparent 1px)',
+          backgroundSize: '40px 40px'
+        }} />
+        <div style={{ position: 'fixed', top: 0, right: 0, width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(6,182,212,0.06) 0%, transparent 70%)', zIndex: 0, pointerEvents: 'none' }} />
+        <div style={{ position: 'fixed', bottom: 0, left: 0, width: '500px', height: '500px', background: 'radial-gradient(circle, rgba(29,78,216,0.05) 0%, transparent 70%)', zIndex: 0, pointerEvents: 'none' }} />
+
+        {/* Top Nav */}
+        <nav style={{
+          position: 'relative', zIndex: 10,
+          borderBottom: '1px solid rgba(6,182,212,0.12)',
+          background: 'rgba(3,7,18,0.85)', backdropFilter: 'blur(12px)',
+          direction: 'ltr'
+        }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{
+                width: '32px', height: '32px', borderRadius: '8px',
+                background: 'rgba(8,51,68,0.8)', border: '1px solid rgba(34,211,238,0.3)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                animation: 'glow-pulse 3s infinite',
+                cursor: 'default'
+              }}>
+                <Shield style={{ width: '16px', height: '16px', color: '#22d3ee' }} />
+              </div>
+              <div>
+                <div style={{ fontFamily: 'monospace', fontSize: '13px', fontWeight: 700, color: '#f8fafc', letterSpacing: '0.15em' }}>DETERMA OS</div>
+                <div style={{ fontFamily: 'monospace', fontSize: '9px', color: 'rgba(34,211,238,0.5)', letterSpacing: '0.12em' }}>V13 SIGNATURE READY</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                padding: '6px 14px', borderRadius: '20px',
+                background: 'rgba(8,51,68,0.4)', border: '1px solid rgba(34,211,238,0.2)',
+                fontFamily: 'monospace', fontSize: '10px', color: '#22d3ee', letterSpacing: '0.1em'
+              }}>
+                <Lock style={{ width: '10px', height: '10px' }} />
+                AES-256
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontFamily: 'monospace', fontSize: '10px', color: '#64748b' }}>
+                <span style={{ position: 'relative', display: 'inline-flex', width: '8px', height: '8px' }}>
+                  <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#10b981', animation: 'pulse-ring 1.5s cubic-bezier(0.24,0,0.38,1) infinite' }} />
+                  <span style={{ position: 'relative', width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', display: 'block' }} />
+                </span>
+                ONLINE
+              </div>
+            </div>
+          </div>
+        </nav>
+
+        {/* Main Content */}
+        <main style={{ position: 'relative', zIndex: 10, maxWidth: '1200px', margin: '0 auto', padding: '28px 24px', display: 'flex', gap: '24px' }}>
+
+          {/* Sidebar */}
+          <aside style={{ width: '240px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ background: 'rgba(11,17,32,0.9)', border: '1px solid rgba(6,182,212,0.1)', borderRadius: '12px', padding: '16px' }}>
+              <div style={{ fontFamily: 'monospace', fontSize: '9px', color: 'rgba(34,211,238,0.4)', letterSpacing: '0.15em', marginBottom: '12px', textTransform: 'uppercase' }}>Document Index</div>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                {NAV_ITEMS.map(item => {
+                  const Icon = item.icon;
+                  const active = activeSection === item.id;
+                  return (
+                    <li key={item.id}>
+                      <button onClick={() => setActiveSection(item.id)} style={{
+                        width: '100%', textAlign: 'right', padding: '10px 12px', borderRadius: '8px',
+                        border: active ? '1px solid rgba(34,211,238,0.25)' : '1px solid transparent',
+                        background: active ? 'rgba(34,211,238,0.08)' : 'transparent',
+                        color: active ? '#22d3ee' : '#64748b',
+                        fontSize: '12px', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', gap: '10px',
+                        transition: 'all 0.2s', direction: 'rtl'
+                      }}
+                        onMouseEnter={e => { if (!active) { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.color = '#94a3b8'; } }}
+                        onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#64748b'; } }}
+                      >
+                        <ChevronLeft style={{ width: '14px', height: '14px', opacity: active ? 1 : 0, flexShrink: 0, transition: 'all 0.2s', transform: active ? 'translateX(-2px)' : 'none' }} />
+                        <Icon style={{ width: '14px', height: '14px', flexShrink: 0 }} />
+                        <span style={{ flex: 1 }}>{item.label}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+
+            <div style={{ background: 'rgba(11,17,32,0.9)', border: '1px solid rgba(6,182,212,0.1)', borderRadius: '12px', padding: '16px' }}>
+              <div style={{ fontFamily: 'monospace', fontSize: '9px', color: 'rgba(34,211,238,0.4)', letterSpacing: '0.15em', marginBottom: '12px', textTransform: 'uppercase' }}>Verification</div>
+              {[{ label: "Idan's Identity" }, { label: "Alon's Identity" }].map(v => (
+                <div key={v.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: '11px', direction: 'ltr' }}>
+                  <span style={{ color: '#64748b' }}>{v.label}</span>
+                  <span style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <CheckCircle2 style={{ width: '10px', height: '10px' }} /> Verified
+                  </span>
+                </div>
+              ))}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', fontSize: '11px', direction: 'ltr' }}>
+                <span style={{ color: '#64748b' }}>Status</span>
+                <span style={{ fontFamily: 'monospace', color: signState === 'done' ? '#22d3ee' : '#f59e0b', fontSize: '10px' }}>
+                  {signState === 'done' ? 'EXECUTED' : 'PENDING'}
+                  {signState !== 'done' && <span style={{ animation: 'blink 1s infinite', marginRight: '2px' }}>_</span>}
+                </span>
+              </div>
+            </div>
+          </aside>
+
+          {/* Main card */}
+          <div style={{ flex: 1, background: 'rgba(11,17,32,0.85)', border: '1px solid rgba(6,182,212,0.1)', borderRadius: '14px', overflow: 'hidden', boxShadow: '0 0 60px rgba(6,182,212,0.04)', display: 'flex', flexDirection: 'column' }}>
+
+            {/* Card header */}
+            <div style={{ padding: '28px 32px', borderBottom: '1px solid rgba(6,182,212,0.1)', background: 'rgba(15,23,42,0.6)', position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
+              <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '120px', height: '120px', background: 'radial-gradient(circle, rgba(34,211,238,0.08), transparent)' }} />
+              <div style={{ fontSize: '24px', fontWeight: 700, color: '#f8fafc', marginBottom: '8px', letterSpacing: '-0.01em' }}>
+                Founder Terms Framework
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontFamily: 'monospace', fontSize: '11px', color: 'rgba(34,211,238,0.6)', direction: 'ltr' }}>
+                <span style={{ padding: '3px 10px', background: 'rgba(34,211,238,0.08)', border: '1px solid rgba(34,211,238,0.2)', borderRadius: '4px' }}>V13 SIGNATURE READY</span>
+                <span>•</span>
+                <span>DETERMA CORE FRAMEWORK</span>
+                <span>•</span>
+                <span style={{ color: '#64748b' }}>FINAL PRINCIPLES</span>
+              </div>
+            </div>
+
+            {/* Content (Scrollable) */}
+            <div style={{ padding: '28px 32px', overflowY: 'auto', flex: 1 }}>
+              <SectionContent id={activeSection} />
+            </div>
+
+            {/* Signature Area */}
+            <div style={{ borderTop: '1px solid rgba(6,182,212,0.1)', background: 'rgba(15,23,42,0.6)', padding: '24px 32px', flexShrink: 0 }}>
+              {signState === 'idle' && (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', direction: 'ltr' }}>
+                  <div style={{ fontFamily: 'monospace', fontSize: '10px', color: '#475569', letterSpacing: '0.2em' }}>BIOMETRIC AUTHORIZATION REQUIRED</div>
+                  <button onClick={handleSign} style={{
+                    padding: '14px 32px', borderRadius: '40px',
+                    background: 'rgba(8,51,68,0.4)', border: '1px solid rgba(34,211,238,0.3)',
+                    color: '#f1f5f9', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px',
+                    fontFamily: 'monospace', fontSize: '13px', fontWeight: 600, letterSpacing: '0.1em',
+                    transition: 'all 0.3s', position: 'relative', overflow: 'hidden'
+                  }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(8,51,68,0.8)'; e.currentTarget.style.borderColor = 'rgba(34,211,238,0.6)'; e.currentTarget.style.boxShadow = '0 0 24px rgba(34,211,238,0.15)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(8,51,68,0.4)'; e.currentTarget.style.borderColor = 'rgba(34,211,238,0.3)'; e.currentTarget.style.boxShadow = 'none'; }}
+                  >
+                    <Fingerprint style={{ width: '20px', height: '20px', color: '#22d3ee' }} />
+                    AUTHORIZE FRAMEWORK
+                  </button>
+                </div>
+              )}
+
+              {signState === 'scanning' && (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', direction: 'ltr' }}>
+                  <div style={{ fontFamily: 'monospace', fontSize: '10px', color: '#22d3ee', letterSpacing: '0.2em', animation: 'blink 0.8s infinite' }}>
+                    SCANNING BIOMETRICS...
+                  </div>
+                  <div style={{ width: '280px', height: '3px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', overflow: 'hidden' }}>
+                    <div style={{
+                      height: '100%', width: `${scanProgress}%`,
+                      background: 'linear-gradient(90deg, #0891b2, #22d3ee)',
+                      transition: 'width 0.06s linear',
+                      boxShadow: '0 0 8px rgba(34,211,238,0.6)'
+                    }} />
+                  </div>
+                  <div style={{ fontFamily: 'monospace', fontSize: '11px', color: '#475569' }}>{Math.round(scanProgress)}%</div>
+                </div>
+              )}
+
+              {signState === 'done' && (
+                <div style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px',
+                  padding: '20px', borderRadius: '12px',
+                  background: 'rgba(6,78,59,0.2)', border: '1px solid rgba(16,185,129,0.25)',
+                  animation: 'float-up 0.4s ease-out both', direction: 'ltr'
+                }}>
+                  <div style={{
+                    width: '56px', height: '56px', borderRadius: '50%',
+                    background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    animation: 'success-pop 0.5s cubic-bezier(0.16,1,0.3,1) both',
+                    boxShadow: '0 0 30px rgba(16,185,129,0.2)'
+                  }}>
+                    <CheckCircle2 style={{ width: '28px', height: '28px', color: '#10b981' }} />
+                  </div>
+                  <div style={{ fontFamily: 'monospace', fontSize: '14px', fontWeight: 700, color: '#f8fafc', letterSpacing: '0.15em' }}>FRAMEWORK EXECUTED</div>
+                  <div style={{ fontFamily: 'monospace', fontSize: '10px', color: 'rgba(16,185,129,0.5)', animation: 'hash-reveal 0.8s ease-out 0.3s both', opacity: 0 }}>
+                    CRYPTOGRAPHIC HASH: 0x8f2a4d7e...9c4b
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </main>
+      </div>
+    </>
+  );
+}
